@@ -1,0 +1,6 @@
+python upgrade.py \
+--name something.example.com \
+--vendor aruba \
+--ip something.example.com \
+--port 10162 \
+--software_version ArubaOpenconfigAP_Draco_10.0.0.0_73205
