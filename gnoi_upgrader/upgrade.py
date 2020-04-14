@@ -8,6 +8,7 @@ vendors.
 from absl import app
 from absl import flags
 from absl import logging
+import getpass
 import gnoi_lib
 
 FLAGS = flags.FLAGS
@@ -19,6 +20,8 @@ flags.DEFINE_string('target_addr', '', 'DNS name of device, may match the name '
                     'flag. eg. "something.example.com"')
 flags.DEFINE_string('port', '', 'Port number for the gRPC connection')
 flags.DEFINE_string('software_version', '', 'Software version to upgrade to')
+flags.DEFINE_string('username', '', 'Username for authentication')
+flags.DEFINE_string('password', '', 'Password for authentication')
 flags.DEFINE_boolean('activate', True, 'To activate image immediately')
 
 _CENTRALLY_MANAGED = ('mist', 'cisco')
@@ -30,10 +33,15 @@ def main(argv):
 
   target_addr = FLAGS.target_addr
   vendor = FLAGS.vendor.lower()
+  username = FLAGS.username
+  password = FLAGS.password
+  if not FLAGS.username or not FLAGS.password:  # Creds not provided at runtime.
+    username, password = getpass.getpass('User: '), getpass.getpass('Password: ')
   if vendor in _CENTRALLY_MANAGED:
     target_addr = None
 
-  device = gnoi_lib.GNOITarget(FLAGS.name, vendor, ip=target_addr, port=FLAGS.port)
+  device = gnoi_lib.GNOITarget(FLAGS.name, vendor, username, password,
+                               ip=target_addr, port=FLAGS.port)
   logging.info('Will upgrade device %s', device.name)
   response = device.SetPackage(FLAGS.software_version, FLAGS.activate)
   logging.info(response)

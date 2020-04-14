@@ -111,9 +111,12 @@ k+emJSPYCYQn2jTyvdm6CwgQZAILYFOaUYUwwRx/JJUoUFerjCappO8ydY5v7TnO
 class GNOITarget(object):
   """Base class to perform gNOI Operations."""
 
-  def __init__(self, name, vendor, ip=None, port=None, channel=None):
+  def __init__(self, name, vendor, username, password, ip=None, port=None,
+               channel=None):
     self.name = name
     self.vendor = vendor
+    self.username = username
+    self.password = password
     self.ip = ip or _GNOI_TARGET_IPS.get(vendor.lower(), '0.0.0.0')
     self.port = port or _GNOI_TARGET_PORTS.get(vendor.lower(), '443')
     self.grpc_creds = self._GetCreds(vendor)
@@ -165,7 +168,8 @@ class GNOITarget(object):
 
     try:
       self.stub.SetPackage(iter([request_pb]), timeout=120, wait_for_ready=True,
-                           metadata=_GetMetadata(self.vendor, self.name))
+                           metadata=_GetMetadata(self.vendor, self.name,
+                                                 self.username, self.password))
     except grpc.RpcError as e:
       # Could also key off of grpc.StatusCode.UNAVAILABLE/etc.
       # we close the channel otherwise gRPC may retry indefinitely depending on
@@ -174,25 +178,11 @@ class GNOITarget(object):
       self.channel.close()
       raise
 
-def _GetVendorCreds(vendor):
-  """Gets vendor credentials for GNMI/GNOI.
 
-  This would be a good place to call your own secret storage system.
-  """
-  logging.info('Getting credentials for %s', vendor)
-  vendor_name = vendor.lower()
-  username = 'admin'
-  password = 'admin'
-
-  return username, password
-
-def _GetMetadata(vendor, host_name):
+def _GetMetadata(vendor, host_name, username, password):
   """Returns appropriate metadata given a vendor and host name."""
-  username, password = _GetVendorCreds(vendor)
-
   if _HOSTNAME_REQUIRED.get(vendor.lower(), False):
     logging.info('Will set hostname on grpc metadata for: %s', host_name)
     return [('username', username), ('password', password),
             ('hostname', host_name)]
-  else:
-    return [('username', username), ('password', password)]
+  return [('username', username), ('password', password)]
