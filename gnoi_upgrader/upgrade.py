@@ -33,10 +33,8 @@ def main(argv):
 
   target_addr = FLAGS.target_addr
   vendor = FLAGS.vendor.lower()
-  username = FLAGS.username
-  password = FLAGS.password
-  if not FLAGS.username or not FLAGS.password:  # Creds not provided at runtime.
-    username, password = getpass.getpass('User: '), getpass.getpass('Password: ')
+  username = FLAGS.username or getpass.getpass('User: ')
+  password = FLAGS.password or getpass.getpass('Password: ')
   if vendor in _CENTRALLY_MANAGED:
     target_addr = None
 
