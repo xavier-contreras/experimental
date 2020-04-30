@@ -38,7 +38,12 @@ myDevice.SetPackage(FLAGS.software_version, FLAGS.activate)
 ```
 
 ## Requirements
-
+git clone this repo, and then:
+```
+pipenv install
+pipenv shell
+```
+Or if you prefer system-wide installation:
 ```
 pip install absl-py
 pip install --user grpcio-tools
